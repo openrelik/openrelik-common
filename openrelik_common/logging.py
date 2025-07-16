@@ -6,6 +6,29 @@ OPENRELIK_LOG_TYPE = "OPENRELIK_LOG_TYPE" # structlog,structlog_console,None
 
 
 class Logger:
+    """logger provides functionality to output plain logging, structured JSON
+    logging of structured console logging.
+    
+    The logging output format is defined by setting the environment variable 
+    OPENRELIK_LOG_TYPE to `structlog` or `struclog_console`
+    Usage:
+        ```
+            from openrelik_common.logging import Logger
+
+            # Instantiate Logger class
+            log = Logger()
+
+            # Setup a logger with 2 binded key-values.
+            logger = log.get_logger(name=__name__, key1=value1, key2=value2)
+
+            # Bind additional values to the logger, they will added to any log message.
+            log.bind(workflow_id=workflow_id)
+
+            # Output debug log message.
+            logger.debug(f"This is a debug message")
+        ```
+    """
+
     def __init__(self):
         if os.environ.get(OPENRELIK_LOG_TYPE, "").startswith("structlog"):
             base_processors = [
@@ -62,8 +85,15 @@ class Logger:
             )
 
     def get_logger(self, name="", wrap_logger=None, **kwargs):
-        """
-        Returns a wrapper, structlog or plain python logger and binds key-value kwargs.
+        """Gets a logger instance.
+
+        Args:
+            name (str): The name of the logger.
+            wrap_logger (logger): A Python logger instance that can be wrapped in a structlog instance.
+            kwargs (**kwargs): Any key/vlue combinations to bind to the logger.
+
+        Returns:
+            logger: A (wrapped) structlog or plain python logger with key-value binded kwargs.
         """
         if wrap_logger:
             # This can be used to wrap e.g. the Celery logger in a structlog
@@ -81,5 +111,10 @@ class Logger:
         return self.logger
 
     def bind(self, **kwargs):
+        """Bind key/values to a Logger instance.
+
+        Args:
+            kwargs (**kwargs): Any key/vlue combinations to bind to the logger.
+        """
         if os.environ.get(OPENRELIK_LOG_TYPE, "").startswith("structlog"):
             structlog.contextvars.bind_contextvars(**kwargs)
