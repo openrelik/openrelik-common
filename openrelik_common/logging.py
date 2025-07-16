@@ -90,7 +90,7 @@ class Logger:
         Args:
             name (str): The name of the logger.
             wrap_logger (logger): A Python logger instance that can be wrapped in a structlog instance.
-            kwargs (**kwargs): Any key/vlue combinations to bind to the logger.
+            kwargs (**kwargs): Any key/value combinations to bind to the logger.
 
         Returns:
             logger: A (wrapped) structlog or plain python logger with key-value binded kwargs.
@@ -114,7 +114,7 @@ class Logger:
         """Bind key/values to a Logger instance.
 
         Args:
-            kwargs (**kwargs): Any key/vlue combinations to bind to the logger.
+            kwargs (**kwargs): Any key/value combinations to bind to the logger.
         """
         if os.environ.get(OPENRELIK_LOG_TYPE, "").startswith("structlog"):
             structlog.contextvars.bind_contextvars(**kwargs)
