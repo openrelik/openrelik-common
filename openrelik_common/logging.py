@@ -10,7 +10,7 @@ class Logger:
     logging of structured console logging.
     
     The logging output format is defined by setting the environment variable 
-    OPENRELIK_LOG_TYPE to `structlog` or `struclog_console`
+    OPENRELIK_LOG_TYPE to `structlog` or `structlog_console`
     Usage:
         ```
             from openrelik_common.logging import Logger
