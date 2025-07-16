@@ -2,7 +2,7 @@
 Common utilities for OpenRelik 
 
 # Documentation
-TODO
+Documentation can be found [here](https://openrelik.github.io/openrelik-common/openrelik_common/index.html)
 
 # Run Tests
 ```
