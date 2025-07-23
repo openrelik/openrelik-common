@@ -36,5 +36,3 @@ def setup_telemetry(service_name: str):
         raise Exception("Unsupported OTEL tracing mode %s", otel_mode)
 
     trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(trace_exporter))
-# OpenRelik Telemetry functionality
- No newline at end of file
