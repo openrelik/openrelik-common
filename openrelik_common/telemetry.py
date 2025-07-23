@@ -1,4 +1,7 @@
 # OpenRelik OpenTelemetry helper methods
+
+import os
+
 from opentelemetry import trace
 
 from opentelemetry.exporter.otlp.proto.grpc import trace_exporter as grpc_exporter
