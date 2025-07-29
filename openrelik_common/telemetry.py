@@ -8,6 +8,7 @@ from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc import trace_exporter as grpc_exporter
 from opentelemetry.exporter.otlp.proto.http import trace_exporter as http_exporter
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -50,6 +51,15 @@ def instrument_celery_app(celery_app):
         celery_app (celery.app.Celery): the celery app to instrument.
     """
     CeleryInstrumentor().instrument(celery_app=celery_app)
+
+
+def instrument_fast_api(fast_api):
+    """Helper method to call the OpenTelemetry Python instrumentor on an FastAPI app object.
+
+    Args:
+        fast_api (fastapi.FastAPI): the FastAPI app to instrument.
+    """
+    FastAPIInstrumentor.instrument_app(api_v1)
 
 
 def add_attribute_to_current_span(name: str, value: object):
