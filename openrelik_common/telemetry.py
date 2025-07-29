@@ -1,5 +1,6 @@
 # OpenRelik OpenTelemetry helper methods
 
+import json
 import os
 
 from opentelemetry import trace
