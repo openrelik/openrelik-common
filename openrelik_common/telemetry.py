@@ -48,7 +48,7 @@ def instrument_celery_app(celery_app):
     Args:
         celery_app (celery.app.Celery): the celery app to instrument.
     """
-    CeleryInstrumentor().instrument(celery_app=celery)
+    CeleryInstrumentor().instrument(celery_app=celery_app)
 
 
 def add_attribute_to_current_span(name: str, value: object):
