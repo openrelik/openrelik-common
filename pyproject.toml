@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openrelik-common"
-version = "0.2.0"
+version = "0.4.0"
 description = "Common utilities for OpenRelik"
 authors = [
     "hacktobeer <ramsesdebeer@gmail.com>",
@@ -8,6 +8,10 @@ authors = [
 readme = "README.md"
 
 [tool.poetry.dependencies]
+fastapi = "^0.115.11"
+opentelemetry-exporter-otlp = "1.32.1"
+opentelemetry-instrumentation-celery = "^0.53b1"
+opentelemetry-instrumentation-fastapi = "^0.53b1"
 python = "^3.11"
 structlog = "^25.4.0"
 
