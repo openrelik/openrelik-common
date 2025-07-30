@@ -1,4 +1,37 @@
-# OpenRelik OpenTelemetry helper methods
+"""
+Module providing OpenTelemetry capability to other openrelik codebases.
+
+Depending on whether your OpenTelemetry endpoint is configured to recieve traces
+via GRPC or HTTP method, first set the OPENRELIK_OTEL_MODE environment variable
+to either `otlp-grpc` or `otlp-http`.
+Then you can configure the OpenRelik endpoint address by setting the environment
+variable OPENRELIK_OTLP_GRPC_ENDPOINT or OPENRELIK_OTLP_HTTP_ENDPOINT, depending on
+your usecase.
+
+Example usage in a openrelik-worker codebase:
+    In src/app.py:
+    ```
+       from openrelik_common import telemetry
+
+       telemetry.setup_telemetry('openrelik-worker-strings')
+
+       celery = Celery(...)
+
+       telemetry.instrument_celery_app(celery)
+    ```
+
+    In src/tasks.py:
+    ```
+       from openrelik_comon import telemetry
+
+       @celery.task(bind=True, name=TASK_NAME, metadata=TASK_METADATA)
+       def strings(...):
+
+         <...>
+
+         telemetry.add_attribute_to_current_span("task_config", task_config)
+    ```
+"""
 
 import json
 import os
