@@ -61,7 +61,10 @@ def setup_telemetry(service_name: str):
     """
     otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
     if not otel_mode.startswith("otlp-"):
+        print('no otlp')
         return
+    else:
+        print('yes otlp')
 
     resource = Resource(attributes={"service.name": service_name})
 
