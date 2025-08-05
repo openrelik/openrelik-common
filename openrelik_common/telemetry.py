@@ -4,6 +4,10 @@ Module providing OpenTelemetry capability to other openrelik codebases.
 Depending on whether your OpenTelemetry endpoint is configured to recieve traces
 via GRPC or HTTP method, first set the OPENRELIK_OTEL_MODE environment variable
 to either `otlp-grpc` or `otlp-http`.
+
+Failure to set this environment variable means none of the following methods will
+do anything.
+
 Then you can configure the OpenRelik endpoint address by setting the environment
 variable OPENRELIK_OTLP_GRPC_ENDPOINT or OPENRELIK_OTLP_HTTP_ENDPOINT, depending on
 your usecase.
@@ -32,7 +36,6 @@ Example usage in a openrelik-worker codebase:
          telemetry.add_attribute_to_current_span("task_config", task_config)
     ```
 """
-
 import json
 import os
 
@@ -61,10 +64,7 @@ def setup_telemetry(service_name: str):
     """
     otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
     if not otel_mode.startswith("otlp-"):
-        print('no otlp')
         return
-    else:
-        print('yes otlp')
 
     resource = Resource(attributes={"service.name": service_name})
 
