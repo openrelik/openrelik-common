@@ -114,9 +114,23 @@ def instrument_fast_api(fast_api):
 
     FastAPIInstrumentor.instrument_app(fast_api)
 
+def add_event_to_current_span(event: str):
+    """Adds an OpenTelemetry event to the current span.
+
+    Args:
+        event (str): the message to add to the event.
+    """
+    otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
+    if not otel_mode.startswith("otlp-"):
+        return
+
+    otel_span = trace.get_current_span()
+    if otel_span != INVALID_SPAN:
+        otel_span.add_event(event)
+
 
 def add_attribute_to_current_span(name: str, value: object):
-    """This methods tried to get a handle of the OpenTelemetry span in the current context, and add
+    """This methods tries to get a handle of the OpenTelemetry span in the current context, and add
     an attribute to it, using the name and value passed as arguments.
 
     Args:
