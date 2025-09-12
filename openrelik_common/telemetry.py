@@ -4,6 +4,10 @@ Module providing OpenTelemetry capability to other openrelik codebases.
 Depending on whether your OpenTelemetry endpoint is configured to recieve traces
 via GRPC or HTTP method, first set the OPENRELIK_OTEL_MODE environment variable
 to either `otlp-grpc` or `otlp-http`.
+
+Failure to set this environment variable means none of the following methods will
+do anything.
+
 Then you can configure the OpenRelik endpoint address by setting the environment
 variable OPENRELIK_OTLP_GRPC_ENDPOINT or OPENRELIK_OTLP_HTTP_ENDPOINT, depending on
 your usecase.
@@ -32,7 +36,6 @@ Example usage in a openrelik-worker codebase:
          telemetry.add_attribute_to_current_span("task_config", task_config)
     ```
 """
-
 import json
 import os
 
@@ -51,13 +54,20 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 def setup_telemetry(service_name: str):
     """Configures the OpenTelemetry trace exporter.
 
+    No-op if the environment variable OPENRELIK_OTEL_MODE is different from
+    one of the two supported mode:
+      - 'otel-grpc'
+      - 'otel-http'
+
     Args:
         service_name (str): the service name used to identify generated traces.
     """
+    otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
+    if not otel_mode.startswith("otlp-"):
+        return
 
     resource = Resource(attributes={"service.name": service_name})
 
-    otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "otlp-grpc")
     otlp_grpc_endpoint = os.environ.get("OPENRELIK_OTLP_GRPC_ENDPOINT", "jaeger:4317")
     otlp_http_endpoint = os.environ.get(
         "OPENRELIK_OTLP_HTTP_ENDPOINT", "http://jaeger:4318/v1/traces"
@@ -85,6 +95,10 @@ def instrument_celery_app(celery_app):
     Args:
         celery_app (celery.app.Celery): the celery app to instrument.
     """
+    otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
+    if not otel_mode.startswith("otlp-"):
+        return
+
     CeleryInstrumentor().instrument(celery_app=celery_app)
 
 
@@ -94,17 +108,39 @@ def instrument_fast_api(fast_api):
     Args:
         fast_api (fastapi.FastAPI): the FastAPI app to instrument.
     """
+    otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
+    if not otel_mode.startswith("otlp-"):
+        return
+
     FastAPIInstrumentor.instrument_app(fast_api)
+
+def add_event_to_current_span(event: str):
+    """Adds an OpenTelemetry event to the current span.
+
+    Args:
+        event (str): the message to add to the event.
+    """
+    otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
+    if not otel_mode.startswith("otlp-"):
+        return
+
+    otel_span = trace.get_current_span()
+    if otel_span != INVALID_SPAN:
+        otel_span.add_event(event)
 
 
 def add_attribute_to_current_span(name: str, value: object):
-    """This methods tried to get a handle of the OpenTelemetry span in the current context, and add
+    """This methods tries to get a handle of the OpenTelemetry span in the current context, and add
     an attribute to it, using the name and value passed as arguments.
 
     Args:
         name (str): the name for the attribute.
         value (object): the value of the attribute. This needs to be a json serializable object.
     """
+    otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
+    if not otel_mode.startswith("otlp-"):
+        return
+
     otel_span = trace.get_current_span()
     if otel_span != INVALID_SPAN:
         otel_span.set_attribute(name, json.dumps(value))
