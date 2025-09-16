@@ -17,7 +17,7 @@ Example usage in a openrelik-worker codebase:
     ```
        from openrelik_common import telemetry
 
-       telemetry.setup_telemetry('openrelik-worker-strings')
+       telemetry.setup_telemetry()
 
        celery = Celery(...)
 
@@ -58,6 +58,8 @@ def setup_telemetry(service_name: str = None):
     one of the two supported mode:
       - 'otel-grpc'
       - 'otel-http'
+
+    Sets the OpenTelemetry service name as 'openrelik' by default.
 
     Args:
         service_name (str): the service name used to identify generated traces.
