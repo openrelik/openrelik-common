@@ -51,7 +51,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 
-def setup_telemetry(service_name: str = nil):
+def setup_telemetry(service_name: str = None):
     """Configures the OpenTelemetry trace exporter.
 
     No-op if the environment variable OPENRELIK_OTEL_MODE is different from
