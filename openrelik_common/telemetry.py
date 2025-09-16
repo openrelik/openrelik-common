@@ -17,7 +17,7 @@ Example usage in a openrelik-worker codebase:
     ```
        from openrelik_common import telemetry
 
-       telemetry.setup_telemetry('openrelik-worker-strings')
+       telemetry.setup_telemetry()
 
        celery = Celery(...)
 
@@ -51,7 +51,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 
-def setup_telemetry(service_name: str):
+def setup_telemetry(service_name: str = None):
     """Configures the OpenTelemetry trace exporter.
 
     No-op if the environment variable OPENRELIK_OTEL_MODE is different from
@@ -59,12 +59,17 @@ def setup_telemetry(service_name: str):
       - 'otel-grpc'
       - 'otel-http'
 
+    Sets the OpenTelemetry service name as 'openrelik' by default.
+
     Args:
         service_name (str): the service name used to identify generated traces.
     """
     otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
     if not otel_mode.startswith("otlp-"):
         return
+
+    if not service_name:
+        service_name = os.environ.get("OPENRELIK_OTEL_SERVICE_NAME", "openrelik")
 
     resource = Resource(attributes={"service.name": service_name})
 
