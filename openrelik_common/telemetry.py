@@ -66,6 +66,9 @@ def setup_telemetry(service_name: str):
     if not otel_mode.startswith("otlp-"):
         return
 
+    if not service_name:
+        service_name = os.environ.get("OPENRELIK_OTEL_SERVICE_NAME", "openrelik")
+
     resource = Resource(attributes={"service.name": service_name})
 
     otlp_grpc_endpoint = os.environ.get("OPENRELIK_OTLP_GRPC_ENDPOINT", "jaeger:4317")
