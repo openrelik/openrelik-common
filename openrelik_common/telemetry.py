@@ -77,7 +77,7 @@ def setup_telemetry(service_name: str):
     Args:
         service_name (str): the service name used to identify generated traces.
     """
-    if not is_enabled()
+    if not is_enabled():
         return
 
     resource = Resource(attributes={"service.name": service_name})
