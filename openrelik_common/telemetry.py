@@ -51,6 +51,21 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 
+def is_enabled():
+    """Returns True if telemetry is enabled.
+
+    It checks whether the environment variable OPENRELIK_OTEL_MODE is different from
+    one of the two supported mode:
+      - 'otel-grpc'
+      - 'otel-http'
+
+    Returns:
+      bool: whether telemetry is enabled.
+    """
+    otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
+    return otel_mode.startswith("otlp-")
+
+
 def setup_telemetry(service_name: str):
     """Configures the OpenTelemetry trace exporter.
 
@@ -62,8 +77,7 @@ def setup_telemetry(service_name: str):
     Args:
         service_name (str): the service name used to identify generated traces.
     """
-    otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
-    if not otel_mode.startswith("otlp-"):
+    if not is_enabled()
         return
 
     resource = Resource(attributes={"service.name": service_name})
@@ -95,8 +109,7 @@ def instrument_celery_app(celery_app):
     Args:
         celery_app (celery.app.Celery): the celery app to instrument.
     """
-    otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
-    if not otel_mode.startswith("otlp-"):
+    if not is_enabled():
         return
 
     CeleryInstrumentor().instrument(celery_app=celery_app)
@@ -108,8 +121,7 @@ def instrument_fast_api(fast_api):
     Args:
         fast_api (fastapi.FastAPI): the FastAPI app to instrument.
     """
-    otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
-    if not otel_mode.startswith("otlp-"):
+    if not is_enabled():
         return
 
     FastAPIInstrumentor.instrument_app(fast_api)
@@ -120,8 +132,7 @@ def add_event_to_current_span(event: str):
     Args:
         event (str): the message to add to the event.
     """
-    otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
-    if not otel_mode.startswith("otlp-"):
+    if not is_enabled():
         return
 
     otel_span = trace.get_current_span()
@@ -137,8 +148,7 @@ def add_attribute_to_current_span(name: str, value: object):
         name (str): the name for the attribute.
         value (object): the value of the attribute. This needs to be a json serializable object.
     """
-    otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
-    if not otel_mode.startswith("otlp-"):
+    if not is_enabled():
         return
 
     otel_span = trace.get_current_span()
