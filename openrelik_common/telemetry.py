@@ -38,6 +38,7 @@ Example usage in a openrelik-worker codebase:
 """
 import json
 import os
+import sys
 
 from opentelemetry import trace
 from opentelemetry.trace.span import INVALID_SPAN
@@ -84,6 +85,7 @@ def setup_telemetry(service_name: str):
         trace_exporter = http_exporter.OTLPSpanExporter(endpoint=otlp_http_endpoint)
     elif otel_mode == "default-gce":
         trace_exporter = cloud_trace.CloudTraceSpanExporter()
+        sys.stderr.write('we have a GCE yop')
     else:
         raise Exception("Unsupported OTEL tracing mode %s. Valid values for OPENRELIK_OTEL_MODE are: 'otlp-grpc', 'otlp-http', 'default-gce'", otel_mode)
 
