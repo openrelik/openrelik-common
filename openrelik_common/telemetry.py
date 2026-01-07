@@ -82,7 +82,7 @@ def setup_telemetry(service_name: str):
             "OPENRELIK_OTLP_HTTP_ENDPOINT", "http://jaeger:4318/v1/traces"
         )
         trace_exporter = http_exporter.OTLPSpanExporter(endpoint=otlp_http_endpoint)
-    elif otel_mode == "default_gce":
+    elif otel_mode == "default-gce":
         trace_exporter = cloud_trace.CloudTraceSpanExporter()
     else:
         raise Exception("Unsupported OTEL tracing mode %s", otel_mode)
