@@ -967,21 +967,22 @@ deprecated = ">=1.2.6"
 importlib-metadata = ">=6.0,<8.7.0"
 
 [[package]]
-name = "opentelemetry-exporter-cloud-trace"
-version = "0.10b1"
-description = "Deprecated Cloud Trace integration for OpenTelemetry"
+name = "opentelemetry-exporter-gcp-trace"
+version = "1.11.0"
+description = "Google Cloud Trace exporter for OpenTelemetry"
 optional = false
-python-versions = ">=3.4"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "opentelemetry-exporter-cloud-trace-0.10b1.tar.gz", hash = "sha256:92a665d207fd8767cb62dbdb0eae925a2c415c0dadd6b7dd9fb2c99a445b2235"},
-    {file = "opentelemetry_exporter_cloud_trace-0.10b1-py3-none-any.whl", hash = "sha256:bdb7fb9c10af91efbc8b7978c5650a879d30928b04bc51e042c5db1a01aff7da"},
+    {file = "opentelemetry_exporter_gcp_trace-1.11.0-py3-none-any.whl", hash = "sha256:b3dcb314e1a9985e9185cb7720b693eb393886fde98ae4c095ffc0893de6cefa"},
+    {file = "opentelemetry_exporter_gcp_trace-1.11.0.tar.gz", hash = "sha256:c947ab4ab53e16517ade23d6fe71fe88cf7ca3f57a42c9f0e4162d2b929fecb6"},
 ]
 
 [package.dependencies]
-google-cloud-trace = "*"
-opentelemetry-api = "*"
-opentelemetry-sdk = "*"
+google-cloud-trace = ">=1.1,<2.0"
+opentelemetry-api = ">=1.30,<2.0"
+opentelemetry-resourcedetector-gcp = ">=1.5.0dev0,<2.dev0"
+opentelemetry-sdk = ">=1.30,<2.0"
 
 [[package]]
 name = "opentelemetry-exporter-otlp"
@@ -1155,6 +1156,24 @@ files = [
 
 [package.dependencies]
 protobuf = ">=5.0,<6.0"
+
+[[package]]
+name = "opentelemetry-resourcedetector-gcp"
+version = "1.11.0a0"
+description = "Google Cloud resource detector for OpenTelemetry"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "opentelemetry_resourcedetector_gcp-1.11.0a0-py3-none-any.whl", hash = "sha256:5d65a2a039b1d40c6f41421dbb08d5f441368275ac6de6e76a8fccd1f6acb67e"},
+    {file = "opentelemetry_resourcedetector_gcp-1.11.0a0.tar.gz", hash = "sha256:915a1d6fd15daca9eedd3fc52b0f705375054f2ef140e2e7a6b4cca95a47cdb1"},
+]
+
+[package.dependencies]
+opentelemetry-api = ">=1.30,<2.0"
+opentelemetry-sdk = ">=1.30,<2.0"
+requests = ">=2.24,<3.0"
+typing_extensions = ">=4.0,<5.0"
 
 [[package]]
 name = "opentelemetry-sdk"
@@ -1882,4 +1901,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "9df91c1a00326dd90d96df54fd84903e0280e47d66cd9f400036e159eae1597a"
+content-hash = "47d5bcc5ceac70eaba8bf11b0062d3cd2492fb19b349302cc1b8b176982487ec"
