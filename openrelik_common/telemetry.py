@@ -42,6 +42,7 @@ import os
 from opentelemetry import trace
 from opentelemetry.trace.span import INVALID_SPAN
 
+from opentelemetry.exporter import cloud_trace
 from opentelemetry.exporter.otlp.proto.grpc import trace_exporter as grpc_exporter
 from opentelemetry.exporter.otlp.proto.http import trace_exporter as http_exporter
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
@@ -56,8 +57,10 @@ def setup_telemetry(service_name: str):
 
     No-op if the environment variable OPENRELIK_OTEL_MODE is different from
     one of the two supported mode:
-      - 'otel-grpc'
-      - 'otel-http'
+      - 'otel-default-gce', when exporting Google Cloud trace API,
+            from a GCE instance.
+      - 'otel-grpc', to export to an OpenTelemetry collector with gRPC
+      - 'otel-http', to export to an OpenTelemetry collector with HTTP
 
     Args:
         service_name (str): the service name used to identify generated traces.
@@ -68,18 +71,19 @@ def setup_telemetry(service_name: str):
 
     resource = Resource(attributes={"service.name": service_name})
 
-    otlp_grpc_endpoint = os.environ.get("OPENRELIK_OTLP_GRPC_ENDPOINT", "jaeger:4317")
-    otlp_http_endpoint = os.environ.get(
-        "OPENRELIK_OTLP_HTTP_ENDPOINT", "http://jaeger:4318/v1/traces"
-    )
-
     trace_exporter = None
     if otel_mode == "otlp-grpc":
+        otlp_grpc_endpoint = os.environ.get("OPENRELIK_OTLP_GRPC_ENDPOINT", "jaeger:4317")
         trace_exporter = grpc_exporter.OTLPSpanExporter(
             endpoint=otlp_grpc_endpoint, insecure=True
         )
     elif otel_mode == "otlp-http":
+        otlp_http_endpoint = os.environ.get(
+            "OPENRELIK_OTLP_HTTP_ENDPOINT", "http://jaeger:4318/v1/traces"
+        )
         trace_exporter = http_exporter.OTLPSpanExporter(endpoint=otlp_http_endpoint)
+    elif otel_mode == "default_gce":
+        trace_exporter = cloud_trace.CloudTraceSpanExporter()
     else:
         raise Exception("Unsupported OTEL tracing mode %s", otel_mode)
 
