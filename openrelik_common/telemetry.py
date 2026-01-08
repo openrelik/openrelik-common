@@ -58,10 +58,10 @@ def setup_telemetry(service_name: str):
 
     No-op if the environment variable OPENRELIK_OTEL_MODE is different from
     one of the two supported mode:
-      - 'otel-default-gce', when exporting Google Cloud trace API,
+      - 'otlp-default-gce', when exporting Google Cloud trace API,
             from a GCE instance.
-      - 'otel-grpc', to export to an OpenTelemetry collector with gRPC
-      - 'otel-http', to export to an OpenTelemetry collector with HTTP
+      - 'otlp-grpc', to export to an OpenTelemetry collector with gRPC
+      - 'otlp-http', to export to an OpenTelemetry collector with HTTP
 
     Args:
         service_name (str): the service name used to identify generated traces.
@@ -83,11 +83,10 @@ def setup_telemetry(service_name: str):
             "OPENRELIK_OTLP_HTTP_ENDPOINT", "http://jaeger:4318/v1/traces"
         )
         trace_exporter = http_exporter.OTLPSpanExporter(endpoint=otlp_http_endpoint)
-    elif otel_mode == "default-gce":
+    elif otel_mode == "otlp-default-gce":
         trace_exporter = cloud_trace.CloudTraceSpanExporter()
-        sys.stderr.write('we have a GCE yop')
     else:
-        raise Exception("Unsupported OTEL tracing mode %s. Valid values for OPENRELIK_OTEL_MODE are: 'otlp-grpc', 'otlp-http', 'default-gce'", otel_mode)
+        raise Exception("Unsupported OTEL tracing mode %s. Valid values for OPENRELIK_OTEL_MODE are: 'otlp-grpc', 'otlp-http', 'otlp-default-gce'", otel_mode)
 
     # --- Tracing Setup ---
     trace_provider = TracerProvider(resource=resource)
