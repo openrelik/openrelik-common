@@ -90,7 +90,10 @@ def setup_telemetry(service_name: str):
     elif otel_mode == "otlp-default-gce":
         trace_exporter = cloud_trace.CloudTraceSpanExporter()
     else:
-        raise Exception("Unsupported OTEL tracing mode %s. Valid values for OPENRELIK_OTEL_MODE are: 'otlp-grpc', 'otlp-http', 'otlp-default-gce'", otel_mode)
+        raise Exception(
+                f"Unsupported OTEL tracing mode {otel_mode}. "
+                "Valid values for OPENRELIK_OTEL_MODE are:"
+                " 'otlp-grpc', 'otlp-http', 'otlp-default-gce'")
 
     # --- Tracing Setup ---
     trace_provider = TracerProvider(resource=resource)
