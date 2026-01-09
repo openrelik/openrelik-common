@@ -1,16 +1,21 @@
 """
 Module providing OpenTelemetry capability to other openrelik codebases.
 
-Depending on whether your OpenTelemetry endpoint is configured to recieve traces
-via GRPC or HTTP method, first set the OPENRELIK_OTEL_MODE environment variable
-to either `otlp-grpc` or `otlp-http`.
+Remember to set the OPENRELIK_OTEL_MODE environment variable to something to enable
+traces:
+      - 'otlp-default-gce', when exporting Google Cloud trace API,
+            from a GCE instance.
+      - 'otlp-grpc', to export to an OpenTelemetry collector with gRPC
+      - 'otlp-http', to export to an OpenTelemetry collector with HTTP
 
 Failure to set this environment variable means none of the following methods will
 do anything.
 
-Then you can configure the OpenRelik endpoint address by setting the environment
+If relevant, you can configure the OpenRelik endpoint address by setting the environment
 variable OPENRELIK_OTLP_GRPC_ENDPOINT or OPENRELIK_OTLP_HTTP_ENDPOINT, depending on
 your usecase.
+
+More information at https://openrelik.org/guides/enable-tracing/
 
 Example usage in a openrelik-worker codebase:
     In src/app.py:
@@ -38,7 +43,6 @@ Example usage in a openrelik-worker codebase:
 """
 import json
 import os
-import sys
 
 from opentelemetry import trace
 from opentelemetry.trace.span import INVALID_SPAN
