@@ -88,7 +88,7 @@ def setup_telemetry(service_name: str):
         )
         trace_exporter = http_exporter.OTLPSpanExporter(endpoint=otlp_http_endpoint)
     elif otel_mode == "otlp-default-gce":
-        trace_exporter = cloud_trace.CloudTraceSpanExporter()
+        trace_exporter = cloud_trace.CloudTraceSpanExporter(resource_regex=r'service.*')
     else:
         raise Exception(
                 f"Unsupported OTEL tracing mode {otel_mode}. "
