@@ -50,6 +50,7 @@ from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
+otel_mode = ""
 
 def is_enabled():
     """Returns True if telemetry is enabled.
@@ -62,9 +63,9 @@ def is_enabled():
     Returns:
       bool: whether telemetry is enabled.
     """
+    global otel_mode
     otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
-    return otel_mode.startswith("otlp-")
-
+    return otel_mode.startswith("otlp-"):
 
 def setup_telemetry(service_name: str):
     """Configures the OpenTelemetry trace exporter.
