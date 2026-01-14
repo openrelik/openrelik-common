@@ -86,7 +86,6 @@ def setup_telemetry(service_name: str):
     otlp_http_endpoint = os.environ.get(
         "OPENRELIK_OTLP_HTTP_ENDPOINT", "http://jaeger:4318/v1/traces"
     )
-    
     trace_exporter = None
     if otel_mode == "otlp-grpc":
         trace_exporter = grpc_exporter.OTLPSpanExporter(
