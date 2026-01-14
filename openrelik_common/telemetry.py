@@ -42,6 +42,7 @@ Example usage in a openrelik-worker codebase:
     ```
 """
 import json
+import logging
 import os
 
 from opentelemetry import trace
@@ -90,7 +91,8 @@ def setup_telemetry(service_name: str):
     elif otel_mode == "otlp-default-gce":
         trace_exporter = cloud_trace.CloudTraceSpanExporter(resource_regex=r'service.*')
     else:
-        raise Exception(
+        logger = logging.get_logger('common-lib')
+        logger.error(
                 f"Unsupported OTEL tracing mode {otel_mode}. "
                 "Valid values for OPENRELIK_OTEL_MODE are:"
                 " 'otlp-grpc', 'otlp-http', 'otlp-default-gce'")
