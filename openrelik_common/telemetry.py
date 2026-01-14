@@ -90,15 +90,8 @@ def setup_telemetry(service_name: str):
         return
 
     resource = Resource(attributes={"service.name": service_name})
-<<<<<<< HEAD
 
-=======
     otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
-    otlp_grpc_endpoint = os.environ.get("OPENRELIK_OTLP_GRPC_ENDPOINT", "jaeger:4317")
-    otlp_http_endpoint = os.environ.get(
-        "OPENRELIK_OTLP_HTTP_ENDPOINT", "http://jaeger:4318/v1/traces"
-    )
->>>>>>> 586a8e742d4f8b6472a2ccc40bbd8ccb3af46737
     trace_exporter = None
     if otel_mode == "otlp-grpc":
         otlp_grpc_endpoint = os.environ.get("OPENRELIK_OTLP_GRPC_ENDPOINT", "jaeger:4317")
