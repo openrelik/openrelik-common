@@ -1,16 +1,21 @@
 """
 Module providing OpenTelemetry capability to other openrelik codebases.
 
-Depending on whether your OpenTelemetry endpoint is configured to recieve traces
-via GRPC or HTTP method, first set the OPENRELIK_OTEL_MODE environment variable
-to either `otlp-grpc` or `otlp-http`.
+Remember to set the OPENRELIK_OTEL_MODE environment variable to something to enable
+traces:
+      - 'otlp-default-gce', when exporting Google Cloud trace API,
+            from a GCE instance.
+      - 'otlp-grpc', to export to an OpenTelemetry collector with gRPC
+      - 'otlp-http', to export to an OpenTelemetry collector with HTTP
 
 Failure to set this environment variable means none of the following methods will
 do anything.
 
-Then you can configure the OpenRelik endpoint address by setting the environment
+If relevant, you can configure the OpenRelik endpoint address by setting the environment
 variable OPENRELIK_OTLP_GRPC_ENDPOINT or OPENRELIK_OTLP_HTTP_ENDPOINT, depending on
 your usecase.
+
+More information at https://openrelik.org/guides/enable-tracing/
 
 Example usage in a openrelik-worker codebase:
     In src/app.py:
@@ -37,11 +42,13 @@ Example usage in a openrelik-worker codebase:
     ```
 """
 import json
+import logging
 import os
 
 from opentelemetry import trace
 from opentelemetry.trace.span import INVALID_SPAN
 
+from opentelemetry.exporter import cloud_trace
 from opentelemetry.exporter.otlp.proto.grpc import trace_exporter as grpc_exporter
 from opentelemetry.exporter.otlp.proto.http import trace_exporter as http_exporter
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
@@ -71,8 +78,10 @@ def setup_telemetry(service_name: str):
 
     No-op if the environment variable OPENRELIK_OTEL_MODE is different from
     one of the two supported mode:
-      - 'otel-grpc'
-      - 'otel-http'
+      - 'otlp-default-gce', when exporting Google Cloud trace API,
+            from a GCE instance.
+      - 'otlp-grpc', to export to an OpenTelemetry collector with gRPC
+      - 'otlp-http', to export to an OpenTelemetry collector with HTTP
 
     Args:
         service_name (str): the service name used to identify generated traces.
@@ -81,20 +90,27 @@ def setup_telemetry(service_name: str):
         return
 
     resource = Resource(attributes={"service.name": service_name})
+
     otel_mode = os.environ.get("OPENRELIK_OTEL_MODE", "")
-    otlp_grpc_endpoint = os.environ.get("OPENRELIK_OTLP_GRPC_ENDPOINT", "jaeger:4317")
-    otlp_http_endpoint = os.environ.get(
-        "OPENRELIK_OTLP_HTTP_ENDPOINT", "http://jaeger:4318/v1/traces"
-    )
     trace_exporter = None
     if otel_mode == "otlp-grpc":
+        otlp_grpc_endpoint = os.environ.get("OPENRELIK_OTLP_GRPC_ENDPOINT", "jaeger:4317")
         trace_exporter = grpc_exporter.OTLPSpanExporter(
             endpoint=otlp_grpc_endpoint, insecure=True
         )
     elif otel_mode == "otlp-http":
+        otlp_http_endpoint = os.environ.get(
+            "OPENRELIK_OTLP_HTTP_ENDPOINT", "http://jaeger:4318/v1/traces"
+        )
         trace_exporter = http_exporter.OTLPSpanExporter(endpoint=otlp_http_endpoint)
+    elif otel_mode == "otlp-default-gce":
+        trace_exporter = cloud_trace.CloudTraceSpanExporter(resource_regex=r'service.*')
     else:
-        raise Exception("Unsupported OTEL tracing mode %s", otel_mode)
+        logger = logging.get_logger('common-lib')
+        logger.error(
+                f"Unsupported OTEL tracing mode {otel_mode}. "
+                "Valid values for OPENRELIK_OTEL_MODE are:"
+                " 'otlp-grpc', 'otlp-http', 'otlp-default-gce'")
 
     # --- Tracing Setup ---
     trace_provider = TracerProvider(resource=resource)

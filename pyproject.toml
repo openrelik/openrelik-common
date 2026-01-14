@@ -9,6 +9,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 fastapi = "^0.115.11"
+opentelemetry-exporter-gcp-trace = "1.11.0"
 opentelemetry-exporter-otlp = "1.32.1"
 opentelemetry-instrumentation-celery = "^0.53b1"
 opentelemetry-instrumentation-fastapi = "^0.53b1"
