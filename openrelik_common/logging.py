@@ -61,14 +61,10 @@ class Logger:
                         structlog.processors.CallsiteParameter.LINENO,
                     }
                 ),
+                structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
             ]
-            if os.environ.get(OPENRELIK_LOG_TYPE, "") == "structlog_console":
-                # Render the final event dict for Console output.
-                base_processors.append(structlog.dev.ConsoleRenderer())
-            else:
-                # Render the final event dict as JSON.
-                base_processors.append(structlog.processors.JSONRenderer())
-
+            
+            
             structlog.configure(
                 processors=base_processors,
                 # `wrapper_class` is the bound logger that you get back from
@@ -81,8 +77,40 @@ class Logger:
                 logger_factory=structlog.stdlib.LoggerFactory(),
                 # Effectively freeze configuration after creating the first bound
                 # logger.
-                # cache_logger_on_first_use=True,
+                cache_logger_on_first_use=True,
             )
+
+            # Configure the Standard Library to do the actual rendering
+            handler = logging.StreamHandler()
+
+            processor=None
+            if os.environ.get(OPENRELIK_LOG_TYPE, "") == "structlog_console":
+                # Render the final event dict as Console output.
+                processor=structlog.dev.ConsoleRenderer(colors=True)
+            else:
+                # Render the final event dict as JSON.
+                processor=structlog.processors.JSONRenderer()
+
+            # This formatter will handle BOTH structlog calls and standard logging calls
+            formatter = structlog.stdlib.ProcessorFormatter(
+                processor=processor,
+                # These processors run on logs that come from standard logging (the third party libs)
+                foreign_pre_chain=[
+                    structlog.stdlib.add_log_level,
+                    structlog.stdlib.add_logger_name,
+                    structlog.processors.TimeStamper(fmt="iso"),
+                ],
+            )
+
+            handler.setFormatter(formatter)
+            root_logger = logging.getLogger()
+
+            # Remove existing handlers to avoid further duplication
+            for h in root_logger.handlers[:]:
+                root_logger.removeHandler(h)
+
+            root_logger.addHandler(handler)
+
 
     def get_logger(self, name="", wrap_logger=None, **kwargs):
         """Gets a logger instance.
