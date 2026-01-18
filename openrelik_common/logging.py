@@ -2,14 +2,14 @@ import logging
 import os
 import structlog
 
-OPENRELIK_LOG_TYPE = "OPENRELIK_LOG_TYPE" # structlog,structlog_console,None
+OPENRELIK_LOG_TYPE = "OPENRELIK_LOG_TYPE"  # structlog,structlog_console,None
 
 
 class Logger:
     """logger provides functionality to output plain logging, structured JSON
     logging of structured console logging.
-    
-    The logging output format is defined by setting the environment variable 
+
+    The logging output format is defined by setting the environment variable
     OPENRELIK_LOG_TYPE to `structlog` or `structlog_console`
     Usage:
         ```
@@ -63,8 +63,7 @@ class Logger:
                 ),
                 structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
             ]
-            
-            
+
             structlog.configure(
                 processors=base_processors,
                 # `wrapper_class` is the bound logger that you get back from
@@ -83,13 +82,14 @@ class Logger:
             # Configure the Standard Library to do the actual rendering
             handler = logging.StreamHandler()
 
-            processor=None
+            processor = None
             if os.environ.get(OPENRELIK_LOG_TYPE, "") == "structlog_console":
                 # Render the final event dict as Console output.
-                processor=structlog.dev.ConsoleRenderer(colors=True)
+                # processor=structlog.dev.ConsoleRenderer(colors=True)
+                processor = structlog.dev.ConsoleRenderer()
             else:
                 # Render the final event dict as JSON.
-                processor=structlog.processors.JSONRenderer()
+                processor = structlog.processors.JSONRenderer()
 
             # This formatter will handle BOTH structlog calls and standard logging calls
             formatter = structlog.stdlib.ProcessorFormatter(
@@ -110,7 +110,6 @@ class Logger:
                 root_logger.removeHandler(h)
 
             root_logger.addHandler(handler)
-
 
     def get_logger(self, name="", wrap_logger=None, **kwargs):
         """Gets a logger instance.
