@@ -63,7 +63,7 @@ def test_structlog_console(caplog):
     caplog.set_level(logging.INFO)
     log_structlog_console()
     assert (
-        "INFO     tests.test_logging:test_logging.py:46 2025-01-01T00:00:00Z [info     ] test                           [tests.test_logging] filename=test_logging.py func_name=log_structlog_console lineno=46\n"
+        "2025-01-01T00:00:00Z [info     ] test                           [tests.test_logging] filename=test_logging.py func_name=log_structlog_console lineno=46\n"
         == caplog.text
     )
 
@@ -73,7 +73,7 @@ def test_bind_structlog_console(caplog):
     caplog.set_level(logging.INFO)
     log_bind_structlog_console()
     assert (
-        "INFO     tests.test_logging:test_logging.py:40 2025-01-01T00:00:00Z [info     ] test                           [tests.test_logging] filename=test_logging.py func_name=log_bind_structlog_console lineno=40 workflow_id=12345\n"
+        "2025-01-01T00:00:00Z [info     ] test                           [tests.test_logging] filename=test_logging.py func_name=log_bind_structlog_console lineno=40 workflow_id=12345\n"
         == caplog.text
     )
 
