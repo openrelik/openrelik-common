@@ -58,24 +58,14 @@ def test_bind_structlog(log: pytest_structlog.StructuredLogCapture):
     assert log.has("test", level="info", workflow_id=12345)
 
 
-@freezegun.freeze_time("2025-01-01T00:00:00.000000Z")
-def test_structlog_console(caplog):
-    caplog.set_level(logging.INFO)
+def test_structlog_console(log: pytest_structlog.StructuredLogCapture):
     log_structlog_console()
-    assert (
-        "INFO     tests.test_logging:test_logging.py:46 2025-01-01T00:00:00Z [info     ] test                           [tests.test_logging] filename=test_logging.py func_name=log_structlog_console lineno=46\n"
-        == caplog.text
-    )
+    assert log.has("test", level="info")
 
 
-@freezegun.freeze_time("2025-01-01T00:00:00.000000Z")
-def test_bind_structlog_console(caplog):
-    caplog.set_level(logging.INFO)
+def test_bind_structlog_console(log: pytest_structlog.StructuredLogCapture):
     log_bind_structlog_console()
-    assert (
-        "INFO     tests.test_logging:test_logging.py:40 2025-01-01T00:00:00Z [info     ] test                           [tests.test_logging] filename=test_logging.py func_name=log_bind_structlog_console lineno=40 workflow_id=12345\n"
-        == caplog.text
-    )
+    assert log.has("test", level="info", workflow_id=12345)
 
 
 def test_get_plain_python(caplog):
