@@ -32,28 +32,14 @@ class Logger:
     def __init__(self):
         if os.environ.get(OPENRELIK_LOG_TYPE, "").startswith("structlog"):
             base_processors = [
-                # Merge bind context variables
                 structlog.contextvars.merge_contextvars,
-                # If log level is too low, abort pipeline and throw away log entry.
-                # structlog.stdlib.filter_by_level,
-                # Add the name of the logger to event dict.
                 structlog.stdlib.add_logger_name,
-                # Add log level to event dict.
                 structlog.stdlib.add_log_level,
-                # Perform %-style formatting.
                 structlog.stdlib.PositionalArgumentsFormatter(),
-                # Add a timestamp in ISO 8601 format.
                 structlog.processors.TimeStamper(fmt="iso"),
-                # If the "stack_info" key in the event dict is true, remove it and
-                # render the current stack trace in the "stack" key.
                 structlog.processors.StackInfoRenderer(),
-                # If the "exc_info" key in the event dict is either true or a
-                # sys.exc_info() tuple, remove "exc_info" and render the exception
-                # with traceback into the "exception" key.
                 structlog.processors.format_exc_info,
-                # If some value is in bytes, decode it to a Unicode str.
                 structlog.processors.UnicodeDecoder(),
-                # Add callsite parameters.
                 structlog.processors.CallsiteParameterAdder(
                     {
                         structlog.processors.CallsiteParameter.FILENAME,
@@ -61,40 +47,22 @@ class Logger:
                         structlog.processors.CallsiteParameter.LINENO,
                     }
                 ),
-                structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
             ]
 
+            if os.environ.get(OPENRELIK_LOG_TYPE, "") == "structlog_console":
+                renderer = structlog.dev.ConsoleRenderer()
+            else:
+                renderer = structlog.processors.JSONRenderer()
+
             structlog.configure(
-                processors=base_processors,
-                # `wrapper_class` is the bound logger that you get back from
-                # get_logger(). This one imitates the API of `logging.Logger`.
+                processors=base_processors + [renderer],
                 wrapper_class=structlog.stdlib.BoundLogger,
-                # `logger_factory` is used to create wrapped loggers that are used for
-                # OUTPUT. This one returns a `logging.Logger`. The final value (a JSON
-                # string) from the final processor (`JSONRenderer`) will be passed to
-                # the method of the same name as that you've called on the bound logger.
                 logger_factory=structlog.stdlib.LoggerFactory(),
-                # Effectively freeze configuration after creating the first bound
-                # logger.
                 cache_logger_on_first_use=True,
             )
 
-            # Configure the Standard Library to do the actual rendering
-            handler = logging.StreamHandler()
-
-            processor = None
-            if os.environ.get(OPENRELIK_LOG_TYPE, "") == "structlog_console":
-                # Render the final event dict as Console output.
-                # processor=structlog.dev.ConsoleRenderer(colors=True)
-                processor = structlog.dev.ConsoleRenderer()
-            else:
-                # Render the final event dict as JSON.
-                processor = structlog.processors.JSONRenderer()
-
-            # This formatter will handle BOTH structlog calls and standard logging calls
             formatter = structlog.stdlib.ProcessorFormatter(
-                processor=processor,
-                # These processors run on logs that come from standard logging (the third party libs)
+                processor=renderer,
                 foreign_pre_chain=[
                     structlog.stdlib.add_log_level,
                     structlog.stdlib.add_logger_name,
@@ -102,13 +70,13 @@ class Logger:
                 ],
             )
 
+            # 4. Standard Library Integration
+            # We still set up a root handler, but it will now receive a pre-rendered string
+            handler = logging.StreamHandler()
             handler.setFormatter(formatter)
             root_logger = logging.getLogger()
-
-            # Remove existing handlers to avoid further duplication
             for h in root_logger.handlers[:]:
                 root_logger.removeHandler(h)
-
             root_logger.addHandler(handler)
 
     def get_logger(self, name="", wrap_logger=None, **kwargs):
