@@ -1,6 +1,7 @@
 import logging
 import os
 import structlog
+import sys
 
 OPENRELIK_LOG_TYPE = "OPENRELIK_LOG_TYPE"  # structlog,structlog_console,None
 
@@ -70,14 +71,16 @@ class Logger:
                 ],
             )
 
-            # 4. Standard Library Integration
-            # We still set up a root handler, but it will now receive a pre-rendered string
-            handler = logging.StreamHandler()
+            handler = logging.StreamHandler(sys.stdout)
             handler.setFormatter(formatter)
+
             root_logger = logging.getLogger()
             for h in root_logger.handlers[:]:
                 root_logger.removeHandler(h)
             root_logger.addHandler(handler)
+
+            if root_logger.level == logging.NOTSET:
+                root_logger.setLevel(logging.INFO)
 
     def get_logger(self, name="", wrap_logger=None, **kwargs):
         """Gets a logger instance.

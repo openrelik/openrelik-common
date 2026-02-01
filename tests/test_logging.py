@@ -1,8 +1,9 @@
-import freezegun
+import json
 import logging
 import os
-from openrelik_common.logging import Logger
 import pytest_structlog
+from openrelik_common.logging import Logger
+from .thirdparty import log_thirdparty
 
 
 # Log usage functions
@@ -46,6 +47,12 @@ def log_structlog_console():
     logger.info("test")
 
 
+def log_structlog_3rdparty():
+    os.environ["OPENRELIK_LOG_TYPE"] = "structlog"
+    Logger()
+    log_thirdparty()
+
+
 # Tests
 def test_structlog(log: pytest_structlog.StructuredLogCapture):
     log_structlog()
@@ -71,9 +78,18 @@ def test_bind_structlog_console(log: pytest_structlog.StructuredLogCapture):
 def test_get_plain_python(caplog):
     caplog.set_level(logging.INFO)
     log_plain()
-    assert "INFO     tests.test_logging:test_logging.py:12 test\n" == caplog.text
+    assert "INFO     tests.test_logging:test_logging.py:13 test\n" == caplog.text
 
 
 def test_get_wrap(log: pytest_structlog.StructuredLogCapture):
     log_wrap()
     assert log.has("test", level="info")
+
+
+def test_structlog_3rdparty(capsys):
+    log_structlog_3rdparty()
+    captured = capsys.readouterr()
+    logobj = json.loads(captured.out)
+    assert logobj["event"] == "thirdparty-logging"
+    assert logobj["level"] == "info"
+    # assert "xxxxx" == captured.out
