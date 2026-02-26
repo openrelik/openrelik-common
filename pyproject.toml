@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openrelik-common"
-version = "0.7.6"
+version = "0.7.7"
 description = "Common utilities for OpenRelik"
 authors = [
     "hacktobeer <ramsesdebeer@gmail.com>",
