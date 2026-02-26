@@ -45,6 +45,9 @@ import json
 import logging
 import os
 
+from google.auth import compute_engine
+from google.cloud.trace_v2 import TraceServiceClient
+
 from opentelemetry import trace
 from opentelemetry.trace.span import INVALID_SPAN
 
@@ -105,6 +108,15 @@ def setup_telemetry(service_name: str):
         trace_exporter = http_exporter.OTLPSpanExporter(endpoint=otlp_http_endpoint)
     elif otel_mode == "otlp-default-gce":
         trace_exporter = cloud_trace.CloudTraceSpanExporter(resource_regex=r'service.*')
+        # Explicitly pass credentials from the GKE Metadata Server
+        # This ignores GOOGLE_APPLICATION_CREDENTIALS
+        credentials = compute_engine.Credentials()
+        trace_client = TraceServiceClient(credentials=credentials)
+        trace_exporter = cloud_trace.CloudTraceSpanExporter(
+            resource_regex=r"service.*",
+            client=trace_client
+        )
+
     else:
         logger = logging.get_logger('common-lib')
         logger.error(
