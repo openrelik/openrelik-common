@@ -46,6 +46,8 @@ import logging
 import os
 
 from google.auth import compute_engine
+from google.auth import exceptions as auth_exceptions
+from google.auth import transport
 from google.cloud.trace_v2 import TraceServiceClient
 
 from opentelemetry import trace
@@ -59,6 +61,22 @@ from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+
+def _get_gcp_project_id():
+  """Returns the GCP Project ID as a string."""
+
+  auth_request = transport.requests.Request()
+
+  try:
+    project_id = compute_engine._metadata.get_project_id(auth_request)
+    return project_id
+  except auth_exceptions.TransportError as e:
+    logger = logging.get_logger("common-lib")
+    logger.error(
+        f"Could not get project_id from GCE metadata server: {e}"
+    )
+  return None
 
 
 def is_enabled():
@@ -111,8 +129,12 @@ def setup_telemetry(service_name: str):
         # Explicitly pass credentials from the GKE Metadata Server
         # This ignores GOOGLE_APPLICATION_CREDENTIALS
         credentials = compute_engine.Credentials()
+        # We also require to provide the GCP project ID, or else the trace
+        # library will default back to ADC.
+        # https://github.com/GoogleCloudPlatform/opentelemetry-operations-python/blob/af5d0725de16c84417f993a21fea3f346e0780c7/opentelemetry-exporter-gcp-trace/src/opentelemetry/exporter/cloud_trace/__init__.py#L179
         trace_client = TraceServiceClient(credentials=credentials)
         trace_exporter = cloud_trace.CloudTraceSpanExporter(
+            project_id=_get_gcp_project_id(),
             resource_regex=r"service.*",
             client=trace_client
         )
