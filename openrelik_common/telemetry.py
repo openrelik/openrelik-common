@@ -152,7 +152,7 @@ def setup_telemetry(service_name: str):
     trace.set_tracer_provider(trace_provider)
 
 
-def instrument_celery_app(celery_app):
+def instrument_celery_app(celery_app, **kwargs):
     """Helper method to call the OpenTelemetry Python instrumentor on an Celery app object.
 
     Args:
@@ -161,10 +161,10 @@ def instrument_celery_app(celery_app):
     if not is_enabled():
         return
 
-    CeleryInstrumentor().instrument(celery_app=celery_app)
+    CeleryInstrumentor().instrument(celery_app=celery_app, **kwargs)
 
 
-def instrument_fast_api(fast_api):
+def instrument_fast_api(fast_api, **kwargs):
     """Helper method to call the OpenTelemetry Python instrumentor on an FastAPI app object.
 
     Args:
@@ -173,7 +173,7 @@ def instrument_fast_api(fast_api):
     if not is_enabled():
         return
 
-    FastAPIInstrumentor.instrument_app(fast_api)
+    FastAPIInstrumentor.instrument_app(fast_api, **kwargs)
 
 def add_event_to_current_span(event: str):
     """Adds an OpenTelemetry event to the current span.
