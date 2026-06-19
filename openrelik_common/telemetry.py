@@ -62,23 +62,43 @@ from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
+def safe_telemetry_call(func):
+    """Decorator to ensure telemetry calls never crash the application.
 
+    This makes telemetry 'best-effort'. If a telemetry operation fails
+    (e.g. due to serialization errors), it logs an error and allows
+     the primary business logic to continue.
+    """
+
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:    # pylint: disable=broad-except
+            logger = logging.get_logger("common-lib")
+            logger.error("Telemetry operation %s failed: %s", func.__name__, e)
+            return None
+
+    return wrapper
+
+
+@safe_telemetry_call
 def _get_gcp_project_id():
-  """Returns the GCP Project ID as a string."""
+    """Returns the GCP Project ID as a string."""
 
-  auth_request = transport.requests.Request()
+    auth_request = transport.requests.Request()
 
-  try:
-    project_id = compute_engine._metadata.get_project_id(auth_request)
-    return project_id
-  except auth_exceptions.TransportError as e:
-    logger = logging.get_logger("common-lib")
-    logger.error(
-        f"Could not get project_id from GCE metadata server: {e}"
-    )
-  return None
+    try:
+        project_id = compute_engine._metadata.get_project_id(auth_request)
+        return project_id
+    except auth_exceptions.TransportError as e:
+        logger = logging.get_logger("common-lib")
+        logger.error(
+                f"Could not get project_id from GCE metadata server: {e}"
+        )
+    return None
 
 
+@safe_telemetry_call
 def is_enabled():
     """Returns True if telemetry is enabled.
 
@@ -94,6 +114,7 @@ def is_enabled():
     return otel_mode.startswith("otlp-")
 
 
+@safe_telemetry_call
 def setup_telemetry(service_name: str):
     """Configures the OpenTelemetry trace exporter.
 
@@ -152,6 +173,7 @@ def setup_telemetry(service_name: str):
     trace.set_tracer_provider(trace_provider)
 
 
+@safe_telemetry_call
 def instrument_celery_app(celery_app, **kwargs):
     """Helper method to call the OpenTelemetry Python instrumentor on an Celery app object.
 
@@ -164,6 +186,7 @@ def instrument_celery_app(celery_app, **kwargs):
     CeleryInstrumentor().instrument(celery_app=celery_app, **kwargs)
 
 
+@safe_telemetry_call
 def instrument_fast_api(fast_api, **kwargs):
     """Helper method to call the OpenTelemetry Python instrumentor on an FastAPI app object.
 
@@ -175,6 +198,7 @@ def instrument_fast_api(fast_api, **kwargs):
 
     FastAPIInstrumentor.instrument_app(fast_api, **kwargs)
 
+@safe_telemetry_call
 def add_event_to_current_span(event: str):
     """Adds an OpenTelemetry event to the current span.
 
@@ -189,6 +213,7 @@ def add_event_to_current_span(event: str):
         otel_span.add_event(event)
 
 
+@safe_telemetry_call
 def add_attribute_to_current_span(name: str, value: object):
     """This methods tries to get a handle of the OpenTelemetry span in the current context, and add
     an attribute to it, using the name and value passed as arguments.
