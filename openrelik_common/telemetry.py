@@ -72,7 +72,7 @@ def _get_gcp_project_id():
     project_id = compute_engine._metadata.get_project_id(auth_request)
     return project_id
   except auth_exceptions.TransportError as e:
-    logger = logging.get_logger("common-lib")
+    logger = logging.getLogger("common-lib")
     logger.error(
         f"Could not get project_id from GCE metadata server: {e}"
     )
@@ -140,7 +140,7 @@ def setup_telemetry(service_name: str):
         )
 
     else:
-        logger = logging.get_logger('common-lib')
+        logger = logging.getLogger('common-lib')
         logger.error(
                 f"Unsupported OTEL tracing mode {otel_mode}. "
                 "Valid values for OPENRELIK_OTEL_MODE are:"
