@@ -74,7 +74,7 @@ def safe_telemetry_call(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:    # pylint: disable=broad-except
-            logger = logging.get_logger("common-lib")
+            logger = logging.getLogger("common-lib")
             logger.error("Telemetry operation %s failed: %s", func.__name__, e)
             return None
 
@@ -91,11 +91,12 @@ def _get_gcp_project_id():
         project_id = compute_engine._metadata.get_project_id(auth_request)
         return project_id
     except auth_exceptions.TransportError as e:
-        logger = logging.get_logger("common-lib")
+        logger = logging.getLogger("common-lib")
         logger.error(
                 f"Could not get project_id from GCE metadata server: {e}"
         )
     return None
+
 
 
 @safe_telemetry_call
@@ -161,7 +162,7 @@ def setup_telemetry(service_name: str):
         )
 
     else:
-        logger = logging.get_logger('common-lib')
+        logger = logging.getLogger('common-lib')
         logger.error(
                 f"Unsupported OTEL tracing mode {otel_mode}. "
                 "Valid values for OPENRELIK_OTEL_MODE are:"
